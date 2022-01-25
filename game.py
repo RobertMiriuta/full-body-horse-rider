@@ -2,22 +2,36 @@ from ursina import *
 from ursina.prefabs.first_person_controller import FirstPersonController
 
 
+class Timer:
+
+    def __init__(self):
+        self.startTime = time.time()
+
+    def getCurrentTime(self):
+        return "{:.2f}".format(time.time() - self.startTime)
+
+    def reset(self):
+        self.startTime = time.time()
+
+
 def update():
     if active_tag.visible:
-        elapsed_time = float(timer.text[16:])
+        elapsed_time = float(timerLabel.text[16:])
         if elapsed_time == 0.0:
-            hidden_start_time.text = str(time.time())
-        elapsed_time = time.time() - float(hidden_start_time.text)
-        elapsed_time = "{:.2f}".format(elapsed_time)
-        timer.text = "Time in seconds: " + str(elapsed_time)
+            runtimer.reset()
+            time.sleep(0.01)
+        timerLabel.text = "Time in seconds: " + runtimer.getCurrentTime()
 
     if player.x > 241:
         reset_timer()
 
+    if 10 < player.x < 11 and not active_tag.visible:
+        timerLabel.text = "Time in seconds: " + str(0.0)
+        active_tag.visible = True
+
 
 def reset_timer():
     active_tag.visible = False
-    hidden_start_time.text = str(0.0)
 
 
 def input(key):
@@ -25,7 +39,7 @@ def input(key):
         if active_tag.visible:
             reset_timer()
         else:
-            timer.text = "Time in seconds: " + str(0.0)
+            timerLabel.text = "Time in seconds: " + str(0.0)
             active_tag.visible = True
 
 
@@ -70,18 +84,18 @@ window.fps_counter.enabled = True
 
 Text.size = 0.03
 Text.default_resolution = 1080 * Text.size
-timer = Text(text="Time in seconds: " + str(0.0))
-timer.x = -0.7
-timer.y = 0.45
-timer.background = True
-timer.visible = True
-hidden_start_time = Text(text=str(0.0))
-hidden_start_time.visible = False
+timerLabel = Text(text="Time in seconds: " + str(0.0))
+timerLabel.x = -0.7
+timerLabel.y = 0.45
+timerLabel.background = False
+timerLabel.visible = True
 active_tag = Text(text="Timer active")
 active_tag.x = -0.3
 active_tag.y = 0.45
 active_tag.color = rgb(0, 255, 0)
 active_tag.background = True
 active_tag.visible = False
+
+runtimer = Timer()
 
 app.run()
