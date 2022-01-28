@@ -1,5 +1,6 @@
 from ursina import *
 from ursina.prefabs.first_person_controller import FirstPersonController
+from pynput.keyboard import Key, Controller
 
 
 class Timer:
@@ -15,6 +16,8 @@ class Timer:
 
 
 def update():
+    held_keys['w'] = 1
+
     if active_tag.visible:
         elapsed_time = float(timerLabel.text[16:])
         if elapsed_time == 0.0:
@@ -22,8 +25,9 @@ def update():
             time.sleep(0.01)
         timerLabel.text = "Time in seconds: " + runtimer.getCurrentTime()
 
-    if held_keys['w']:
+    if player.speed > 0:
         walking_tag.visible = True
+        walking_tag.text = "Speed: " + str(player.speed) + "m/s"
     else:
         walking_tag.visible = False
 
@@ -72,6 +76,7 @@ def update():
 
 
 
+
 def reset_timer():
     active_tag.visible = False
 
@@ -95,6 +100,7 @@ def input(key):
 
 if __name__ == "__main__":
     app = Ursina()
+    keyboard = Controller()
 
     Sky()
     player = FirstPersonController(y=10, origin_y=-.5, speed=0, height=3)
@@ -147,7 +153,7 @@ if __name__ == "__main__":
     active_tag.color = rgb(0, 255, 0)
     active_tag.background = True
     active_tag.visible = False
-    walking_tag = Text(text="RIDING")
+    walking_tag = Text(text="Speed:" + str(player.speed) + "m/s")
     walking_tag.x = -0.7
     walking_tag.y = 0.15
     walking_tag.color = rgb(0, 255, 255)

@@ -13,10 +13,6 @@ class MediaPipeHolisticDetection:
         self.mp_holistic = mp.solutions.holistic
 
         # detected joints
-        self.lelbow = [-1, -1, -1]  # visible, x coor, ycoor
-        self.lelbow_average = [0, 0, 0]  # count, x coor, ycoor
-        self.relbow = [-1, -1, -1]  # visible, x coor, ycoor
-        self.relbow_average = [0, 0, 0]  # count, x coor, ycoor
         self.lhand = [-1, -1, -1]  # visible, x coor, ycoor
         self.lhand_average = [0, 0, 0]  # count, x coor, ycoor
         self.rhand = [-1, -1, -1]  # visible, x coor, ycoor
@@ -24,19 +20,7 @@ class MediaPipeHolisticDetection:
         self.lhip = [-1, -1, -1]  # visible, x coor, ycoor
         self.lhip_average = [0, 0, 0]  # count, x coor, ycoor
         self.rhip = [-1, -1, -1]  # visible, x coor, ycoor
-        self.rhip_average = [0, 0, 0] # count, x coor, ycoor
-        self.lknee = [-1, -1, -1]  # visible, x coor, ycoor
-        self.lknee_average = [0, 0, 0]  # count, x coor, ycoor
-        self.rknee = [-1, -1, -1]  # visible, x coor, ycoor
-        self.rknee_average = [0, 0, 0]  # count, x coor, ycoor
-        self.lshoulder = [-1, -1, -1]  # visible, x coor, ycoor
-        self.lshoulder_average = [0, 0, 0]  # count, x coor, ycoor
-        self.rshoulder = [-1, -1, -1]  # visible, x coor, ycoor
-        self.rshoulder_average = [0, 0, 0]  # count, x coor, ycoor
-        self.ltoe = [-1, -1, -1]  # visible, x coor, ycoor
-        self.ltoe_average = [0, 0, 0]  # count, x coor, ycoor
-        self.rtoe = [-1, -1, -1]  # visible, x coor, ycoor
-        self.rtoe_average = [0, 0, 0]  # count, x coor, ycoor
+        self.rhip_average = [0, 0, 0]  # count, x coor, ycoor
         self.lheel = [-1, -1, -1]  # visible, x coor, ycoor
         self.lheel_average = [0, 0, 0]  # count, x coor, ycoor
         self.rheel = [-1, -1, -1]  # visible, x coor, ycoor
@@ -47,23 +31,16 @@ class MediaPipeHolisticDetection:
         self.cap = cv2.VideoCapture(0)
 
         timer = Timer()
-        heel_click_timer = Timer()
         hip_jump_timer = Timer()
-        hand_jump_timer = Timer()
+        acceleration_timer = Timer()
         calculated_average = False
-        w_pressed = False
 
         reset_heels = True
         reset_hips = True
         reset_hands = True
 
-        is_acceleration_stage_1 = False
-        is_acceleration_stage_2 = False
-        is_acceleration_stage_3 = False
-        is_acceleration_stage_4 = False
-        is_acceleration_stage_5 = False
-        is_acceleration_stage_6 = False
-        is_acceleration_stage_7 = False
+        currently_accelerating = False
+        time_for_next_acc_or_dec = 0
 
         keyboard = Controller()
 
@@ -84,42 +61,13 @@ class MediaPipeHolisticDetection:
                 self.mp_drawing.draw_landmarks(image, results.pose_landmarks, self.mp_holistic.POSE_CONNECTIONS)
 
                 # joints (left and right are flipped)
-                self.lelbow = [-1, -1, -1]  # visible, x coor, ycoor
-                self.relbow = [-1, -1, -1]  # visible, x coor, ycoor
                 self.lhand = [-1, -1, -1]  # visible, x coor, ycoor
                 self.rhand = [-1, -1, -1]  # visible, x coor, ycoor
                 self.lhip = [-1, -1, -1]  # visible, x coor, ycoor
                 self.rhip = [-1, -1, -1]  # visible, x coor, ycoor
-                self.lshoulder = [-1, -1, -1]  # visible, x coor, ycoor
-                self.rshoulder = [-1, -1, -1]  # visible, x coor, ycoor
-                self.lknee = [-1, -1, -1]  # visible, x coor, ycoor
-                self.rknee = [-1, -1, -1]  # visible, x coor, ycoor
-                self.ltoe = [-1, -1, -1]  # visible, x coor, ycoor
-                self.rtoe = [-1, -1, -1]  # visible, x coor, ycoor
                 self.lheel = [-1, -1, -1]  # visible, x coor, ycoor
                 self.rheel = [-1, -1, -1]  # visible, x coor, ycoor
                 if results.pose_landmarks:
-                    if results.pose_landmarks.landmark[
-                        self.mp_holistic.PoseLandmark.LEFT_SHOULDER].visibility > 0.8:
-                        self.lshoulder = [1, results.pose_landmarks.landmark[
-                            self.mp_holistic.PoseLandmark.LEFT_SHOULDER].x,
-                                          results.pose_landmarks.landmark[
-                                              self.mp_holistic.PoseLandmark.LEFT_SHOULDER].y]
-                    if results.pose_landmarks.landmark[
-                        self.mp_holistic.PoseLandmark.RIGHT_SHOULDER].visibility > 0.8:
-                        self.rshoulder = [1,
-                                          results.pose_landmarks.landmark[
-                                              self.mp_holistic.PoseLandmark.RIGHT_SHOULDER].x,
-                                          results.pose_landmarks.landmark[
-                                              self.mp_holistic.PoseLandmark.RIGHT_SHOULDER].y]
-                    if results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_ELBOW].visibility > 0.8:
-                        self.lelbow = [1,
-                                       results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_ELBOW].x,
-                                       results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_ELBOW].y]
-                    if results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_ELBOW].visibility > 0.8:
-                        self.relbow = [1,
-                                       results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_ELBOW].x,
-                                       results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_ELBOW].y]
                     if results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_WRIST].visibility > 0.8:
                         self.lhand = [1,
                                       results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_WRIST].x,
@@ -134,13 +82,6 @@ class MediaPipeHolisticDetection:
                     if results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_HIP].visibility > 0.8:
                         self.rhip = [1, results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_HIP].x,
                                      results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_HIP].y]
-                    if results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_KNEE].visibility > 0.8:
-                        self.lknee = [1, results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_KNEE].x,
-                                      results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_KNEE].y]
-                    if results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_KNEE].visibility > 0.8:
-                        self.rknee = [1,
-                                      results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_KNEE].x,
-                                      results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_KNEE].y]
                     if results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_HEEL].visibility > 0.8:
                         self.lheel = [1, results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_HEEL].x,
                                       results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_HEEL].y]
@@ -148,18 +89,6 @@ class MediaPipeHolisticDetection:
                         self.rheel = [1,
                                       results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_HEEL].x,
                                       results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_HEEL].y]
-                    if results.pose_landmarks.landmark[
-                        self.mp_holistic.PoseLandmark.LEFT_FOOT_INDEX].visibility > 0.8:
-                        self.ltoe = [1, results.pose_landmarks.landmark[
-                            self.mp_holistic.PoseLandmark.LEFT_FOOT_INDEX].x,
-                                     results.pose_landmarks.landmark[
-                                         self.mp_holistic.PoseLandmark.LEFT_FOOT_INDEX].y]
-                    if results.pose_landmarks.landmark[
-                        self.mp_holistic.PoseLandmark.RIGHT_FOOT_INDEX].visibility > 0.8:
-                        self.rtoe = [1, results.pose_landmarks.landmark[
-                            self.mp_holistic.PoseLandmark.RIGHT_FOOT_INDEX].x,
-                                     results.pose_landmarks.landmark[
-                                         self.mp_holistic.PoseLandmark.RIGHT_FOOT_INDEX].y]
 
                 if float(timer.getCurrentTime()) < 8:
                     image = cv2.putText(image, 'Waiting...', (1000, 50), cv2.FONT_HERSHEY_SIMPLEX,
@@ -167,14 +96,6 @@ class MediaPipeHolisticDetection:
                 elif 8 <= float(timer.getCurrentTime()) < 15:
                     image = cv2.putText(image, 'Calibrating...', (1000, 50), cv2.FONT_HERSHEY_SIMPLEX,
                                         1, (126, 126, 0), 2, cv2.LINE_AA)
-                    if self.lelbow[0] == 1:
-                        self.lelbow_average[0] += self.lelbow[0]
-                        self.lelbow_average[1] += self.lelbow[1]
-                        self.lelbow_average[2] += self.lelbow[2]
-                    if self.relbow[0] == 1:
-                        self.relbow_average[0] += self.relbow[0]
-                        self.relbow_average[1] += self.relbow[1]
-                        self.relbow_average[2] += self.relbow[2]
                     if self.lhand[0] == 1:
                         self.lhand_average[0] += self.lhand[0]
                         self.lhand_average[1] += self.lhand[1]
@@ -191,30 +112,6 @@ class MediaPipeHolisticDetection:
                         self.rhip_average[0] += self.rhip[0]
                         self.rhip_average[1] += self.rhip[1]
                         self.rhip_average[2] += self.rhip[2]
-                    if self.lshoulder[0] == 1:
-                        self.lshoulder_average[0] += self.lshoulder[0]
-                        self.lshoulder_average[1] += self.lshoulder[1]
-                        self.lshoulder_average[2] += self.lshoulder[2]
-                    if self.rshoulder[0] == 1:
-                        self.rshoulder_average[0] += self.rshoulder[0]
-                        self.rshoulder_average[1] += self.rshoulder[1]
-                        self.rshoulder_average[2] += self.rshoulder[2]
-                    if self.lknee[0] == 1:
-                        self.lknee_average[0] += self.lknee[0]
-                        self.lknee_average[1] += self.lknee[1]
-                        self.lknee_average[2] += self.lknee[2]
-                    if self.rknee[0] == 1:
-                        self.rknee_average[0] += self.rknee[0]
-                        self.rknee_average[1] += self.rknee[1]
-                        self.rknee_average[2] += self.rknee[2]
-                    if self.ltoe[0] == 1:
-                        self.ltoe_average[0] += self.ltoe[0]
-                        self.ltoe_average[1] += self.ltoe[1]
-                        self.ltoe_average[2] += self.ltoe[2]
-                    if self.rtoe[0] == 1:
-                        self.rtoe_average[0] += self.rtoe[0]
-                        self.rtoe_average[1] += self.rtoe[1]
-                        self.rtoe_average[2] += self.rtoe[2]
                     if self.lheel[0] == 1:
                         self.lheel_average[0] += self.lheel[0]
                         self.lheel_average[1] += self.lheel[1]
@@ -227,36 +124,26 @@ class MediaPipeHolisticDetection:
                     image = cv2.putText(image, 'Active', (1000, 50), cv2.FONT_HERSHEY_SIMPLEX,
                                         1, (0, 255, 0), 2, cv2.LINE_AA)
                     if not calculated_average:
-                        if self.lelbow_average[0] > 0:
-                            self.lelbow_average = [0, self.lelbow_average[1]/self.lelbow_average[0], self.lelbow_average[2]/self.lelbow_average[0]]
-                        if self.relbow_average[0] > 0:
-                            self.relbow_average = [0, self.relbow_average[1]/self.relbow_average[0], self.relbow_average[2]/self.relbow_average[0]]
                         if self.lhand_average[0] > 0:
-                            self.lhand_average = [0, self.lhand_average[1]/self.lhand_average[0], self.lhand_average[2]/self.lhand_average[0]]
+                            self.lhand_average = [0, self.lhand_average[1] / self.lhand_average[0],
+                                                  self.lhand_average[2] / self.lhand_average[0]]
                         if self.rhand_average[0] > 0:
-                            self.rhand_average = [0, self.rhand_average[1]/self.rhand_average[0], self.rhand_average[2]/self.rhand_average[0]]
+                            self.rhand_average = [0, self.rhand_average[1] / self.rhand_average[0],
+                                                  self.rhand_average[2] / self.rhand_average[0]]
                         if self.lhip_average[0] > 0:
-                            self.lhip_average = [0, self.lhip_average[1]/self.lhip_average[0], self.lhip_average[2]/self.lhip_average[0]]
+                            self.lhip_average = [0, self.lhip_average[1] / self.lhip_average[0],
+                                                 self.lhip_average[2] / self.lhip_average[0]]
                         if self.rhip_average[0] > 0:
-                            self.rhip_average = [0, self.rhip_average[1]/self.rhip_average[0], self.rhip_average[2]/self.rhip_average[0]]
-                        if self.lknee_average[0] > 0:
-                            self.lknee_average = [0, self.lknee_average[1]/self.lknee_average[0], self.lknee_average[2]/self.lknee_average[0]]
-                        if self.rknee_average[0] > 0:
-                            self.rknee_average = [0, self.rknee_average[1]/self.rknee_average[0], self.rknee_average[2]/self.rknee_average[0]]
-                        if self.lshoulder_average[0] > 0:
-                            self.lshoulder_average = [0, self.lshoulder_average[1]/self.lshoulder_average[0], self.lshoulder_average[2]/self.lshoulder_average[0]]
-                        if self.rshoulder_average[0] > 0:
-                            self.rshoulder_average = [0, self.rshoulder_average[1]/self.rshoulder_average[0], self.rshoulder_average[2]/self.rshoulder_average[0]]
-                        if self.ltoe_average[0] > 0:
-                            self.ltoe_average = [0, self.ltoe_average[1]/self.ltoe_average[0], self.ltoe_average[2]/self.ltoe_average[0]]
-                        if self.rtoe_average[0] > 0:
-                            self.rtoe_average = [0, self.rtoe_average[1]/self.rtoe_average[0], self.rtoe_average[2]/self.rtoe_average[0]]
+                            self.rhip_average = [0, self.rhip_average[1] / self.rhip_average[0],
+                                                 self.rhip_average[2] / self.rhip_average[0]]
                         if self.lheel_average[0] > 0:
-                            self.lheel_average = [0, self.lheel_average[1]/self.lheel_average[0], self.lheel_average[2]/self.lheel_average[0]]
+                            self.lheel_average = [0, self.lheel_average[1] / self.lheel_average[0],
+                                                  self.lheel_average[2] / self.lheel_average[0]]
                         if self.rheel_average[0] > 0:
-                            self.rheel_average = [0, self.rheel_average[1]/self.rheel_average[0], self.rheel_average[2]/self.rheel_average[0]]
+                            self.rheel_average = [0, self.rheel_average[1] / self.rheel_average[0],
+                                                  self.rheel_average[2] / self.rheel_average[0]]
                         self.average_heel_distance = abs(self.lheel_average[1] - self.rheel_average[1])
-                        self.average_hip_height = (self.lhip_average[2] + self.rhip_average[2])/2
+                        self.average_hip_height = (self.lhip_average[2] + self.rhip_average[2]) / 2
                         self.average_hand_height = (self.lhand_average[2] + self.rhand_average[2]) / 2
                         calculated_average = True
 
@@ -268,40 +155,36 @@ class MediaPipeHolisticDetection:
                     current_heel_distance = abs(self.lheel[1] - self.rheel[1])
                     if current_heel_distance < 0.05 and reset_heels:
                         # heels have been clicked
-                        keyboard.press('w')
-                        w_pressed = True
                         reset_heels = False
-                        heel_click_timer.reset()
+                        acceleration_timer.reset()
+                        currently_accelerating = True
+                        time_for_next_acc_or_dec = 0
                         print("HEELS CLICKED")
-                    if float(heel_click_timer.getCurrentTime()) > 2:
-                        if w_pressed:
-                            print("W RELEASED")
-                            keyboard.release('w')
-                            w_pressed = False
+                    if float(acceleration_timer.getCurrentTime()) > 2.5:
+                        currently_accelerating = False
+                        time_for_next_acc_or_dec = 0
                     if self.average_heel_distance * 0.8 < current_heel_distance < self.average_heel_distance * 1.2 and not reset_heels:
                         print("HEELS RESET")
                         reset_heels = True
 
                     # detect hand lift
-                    current_hand_height = (self.lhand[2] + self.rhand[2])/2
-                    if current_hand_height + 0.15 < self.average_hand_height and reset_hands:
-                        # hands have been lifted
-                        keyboard.press('w')
-                        w_pressed = True
-                        reset_hands = False
-                        hand_jump_timer.reset()
-                        print("HANDS LIFTED")
-                    if float(hand_jump_timer.getCurrentTime()) > 2:
-                        if w_pressed:
-                            print("W RELEASED")
-                            keyboard.release('w')
-                            w_pressed = False
-                    if self.average_hand_height * 0.8 < current_hand_height < self.average_hand_height * 1.2 and not reset_hands:
-                        print("HANDS RESET")
-                        reset_hands = True
+                    # current_hand_height = (self.lhand[2] + self.rhand[2]) / 2
+                    # if current_hand_height + 0.15 < self.average_hand_height and reset_hands:
+                    #     # hands have been lifted
+                    #     reset_hands = False
+                    #     acceleration_timer.reset()
+                    #     currently_accelerating = True
+                    #     time_for_next_acc_or_dec = 0
+                    #     print("HANDS RAISED")
+                    # if float(acceleration_timer.getCurrentTime()) > 2.5:
+                    #     currently_accelerating = False
+                    #     time_for_next_acc_or_dec = 0
+                    # if self.average_hand_height * 0.8 < current_hand_height < self.average_hand_height * 1.2 and not reset_hands:
+                    #     print("HANDS RESET")
+                    #     reset_hands = True
 
                     # detect hip heightening
-                    current_hip_height = (self.lhip[2] + self.rhip[2])/2
+                    current_hip_height = (self.lhip[2] + self.rhip[2]) / 2
                     if float(hip_jump_timer.getCurrentTime()) > 1:
                         if current_hip_height + 0.1 < self.average_hip_height and reset_hips:
                             # hips have jumped
@@ -313,6 +196,18 @@ class MediaPipeHolisticDetection:
                     if self.average_hip_height * 0.9 < current_hip_height < self.average_hip_height * 1.1 and not reset_hips:
                         print("HIPS RESET")
                         reset_hips = True
+
+                    # acceleration and deceleration
+                    if currently_accelerating:
+                        if float(acceleration_timer.getCurrentTime()) > time_for_next_acc_or_dec:
+                            keyboard.press('q')
+                            keyboard.release('q')
+                            time_for_next_acc_or_dec += 0.5
+                    else:
+                        if float(acceleration_timer.getCurrentTime()) > time_for_next_acc_or_dec:
+                            keyboard.press('e')
+                            keyboard.release('e')
+                            time_for_next_acc_or_dec += 0.5
 
                 cv2.imshow('MediaPipe Pose', image)
                 if cv2.waitKey(5) & 0xFF == 27:
