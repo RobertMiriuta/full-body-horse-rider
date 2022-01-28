@@ -42,86 +42,6 @@ class MediaPipeHolisticDetection:
         self.rheel = [-1, -1, -1]  # visible, x coor, ycoor
         self.rheel_average = [0, 0, 0]  # count, x coor, ycoor
 
-    def DetectSingleImg(self, image):
-
-        with self.mp_holistic.Holistic(
-                min_detection_confidence=0.5,
-                min_tracking_confidence=0.5
-        ) as holistic:
-
-            image = cv2.resize(image, (854, 480))
-            image.flags.writeable = False
-            image = cv2.cvtColor(cv2.flip(image, 1), cv2.COLOR_BGR2RGB)
-            results = holistic.process(image)
-            image.flags.writeable = True
-            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-            self.mp_drawing.draw_landmarks(image, results.pose_landmarks, self.mp_holistic.POSE_CONNECTIONS)
-
-            # joints
-            self.lelbow = [-1, -1, -1]  # visible, x coor, ycoor
-            self.relbow = [-1, -1, -1]  # visible, x coor, ycoor
-            self.lhand = [-1, -1, -1]  # visible, x coor, ycoor
-            self.rhand = [-1, -1, -1]  # visible, x coor, ycoor
-            self.lhip = [-1, -1, -1]  # visible, x coor, ycoor
-            self.rhip = [-1, -1, -1]  # visible, x coor, ycoor
-            self.lshoulder = [-1, -1, -1]  # visible, x coor, ycoor
-            self.rshoulder = [-1, -1, -1]  # visible, x coor, ycoor
-            self.lknee = [-1, -1, -1]  # visible, x coor, ycoor
-            self.rknee = [-1, -1, -1]  # visible, x coor, ycoor
-            self.ltoe = [-1, -1, -1]  # visible, x coor, ycoor
-            self.rtoe = [-1, -1, -1]  # visible, x coor, ycoor
-            self.lheel = [-1, -1, -1]  # visible, x coor, ycoor
-            self.rheel = [-1, -1, -1]  # visible, x coor, ycoor
-            if results.pose_landmarks:
-                if results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_SHOULDER].visibility > 0.8:
-                    self.lshoulder = [1, results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_SHOULDER].x,
-                                      results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_SHOULDER].y]
-                if results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_SHOULDER].visibility > 0.8:
-                    self.rshoulder = [1,
-                                      results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_SHOULDER].x,
-                                      results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_SHOULDER].y]
-                if results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_ELBOW].visibility > 0.8:
-                    self.lelbow = [1, results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_ELBOW].x,
-                                   results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_ELBOW].y]
-                if results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_ELBOW].visibility > 0.8:
-                    self.relbow = [1, results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_ELBOW].x,
-                                   results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_ELBOW].y]
-                if results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_WRIST].visibility > 0.8:
-                    self.lhand = [1, results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_WRIST].x,
-                                  results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_WRIST].y]
-                if results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_WRIST].visibility > 0.8:
-                    self.rhand = [1, results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_WRIST].x,
-                                  results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_WRIST].y]
-                if results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_HIP].visibility > 0.8:
-                    self.lhip = [1, results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_HIP].x,
-                                 results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_HIP].y]
-                if results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_HIP].visibility > 0.8:
-                    self.rhip = [1, results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_HIP].x,
-                                 results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_HIP].y]
-                if results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_KNEE].visibility > 0.8:
-                    self.lknee = [1, results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_KNEE].x,
-                                  results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_KNEE].y]
-                if results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_KNEE].visibility > 0.8:
-                    self.rknee = [1, results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_KNEE].x,
-                                  results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_KNEE].y]
-                if results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_HEEL].visibility > 0.8:
-                    self.lheel = [1, results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_HEEL].x,
-                                  results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_HEEL].y]
-                if results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_HEEL].visibility > 0.8:
-                    self.rheel = [1, results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_HEEL].x,
-                                  results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_HEEL].y]
-                if results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_FOOT_INDEX].visibility > 0.8:
-                    self.ltoe = [1, results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_FOOT_INDEX].x,
-                                 results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_FOOT_INDEX].y]
-                if results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_FOOT_INDEX].visibility > 0.8:
-                    self.rtoe = [1, results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_FOOT_INDEX].x,
-                                 results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_FOOT_INDEX].y]
-
-        # return the drawn-on image and detected joints
-        return image, [self.lelbow, self.relbow, self.lhand, self.rhand, self.lhip, self.rhip, self.lshoulder,
-                       self.rshoulder,
-                       self.lknee, self.rknee, self.ltoe, self.rtoe, self.lheel, self.rheel]
-
     # TESTING PART :, standalone function which can be called and will draw on the image
     def StartDetection(self):
         self.cap = cv2.VideoCapture(0)
@@ -136,6 +56,14 @@ class MediaPipeHolisticDetection:
         reset_heels = True
         reset_hips = True
         reset_hands = True
+
+        is_acceleration_stage_1 = False
+        is_acceleration_stage_2 = False
+        is_acceleration_stage_3 = False
+        is_acceleration_stage_4 = False
+        is_acceleration_stage_5 = False
+        is_acceleration_stage_6 = False
+        is_acceleration_stage_7 = False
 
         keyboard = Controller()
 
@@ -332,36 +260,39 @@ class MediaPipeHolisticDetection:
                         self.average_hand_height = (self.lhand_average[2] + self.rhand_average[2]) / 2
                         calculated_average = True
 
-                    # detect heel clicking Test: average .18, clicked .02
+                    # motion detection code
+                    # comment out heel click for standing mode
+                    # comment out hand lift for sitting mode
+
+                    # detect heel clicking
                     current_heel_distance = abs(self.lheel[1] - self.rheel[1])
+                    if current_heel_distance < 0.05 and reset_heels:
+                        # heels have been clicked
+                        keyboard.press('w')
+                        w_pressed = True
+                        reset_heels = False
+                        heel_click_timer.reset()
+                        print("HEELS CLICKED")
                     if float(heel_click_timer.getCurrentTime()) > 2:
-                        if current_heel_distance < 0.05 and reset_heels:
-                            # heels have been clicked
-                            keyboard.press('w')
-                            w_pressed = True
-                            reset_heels = False
-                            heel_click_timer.reset()
-                            print("HEELS CLICKED")
-                        elif w_pressed:
+                        if w_pressed:
                             print("W RELEASED")
                             keyboard.release('w')
                             w_pressed = False
-
                     if self.average_heel_distance * 0.8 < current_heel_distance < self.average_heel_distance * 1.2 and not reset_heels:
                         print("HEELS RESET")
                         reset_heels = True
 
                     # detect hand lift
                     current_hand_height = (self.lhand[2] + self.rhand[2])/2
+                    if current_hand_height + 0.15 < self.average_hand_height and reset_hands:
+                        # hands have been lifted
+                        keyboard.press('w')
+                        w_pressed = True
+                        reset_hands = False
+                        hand_jump_timer.reset()
+                        print("HANDS LIFTED")
                     if float(hand_jump_timer.getCurrentTime()) > 2:
-                        if current_hand_height + 0.15 < self.average_hand_height and reset_hands:
-                            # heels have been clicked
-                            keyboard.press('w')
-                            w_pressed = True
-                            reset_hands = False
-                            hand_jump_timer.reset()
-                            print("HANDS LIFTED")
-                        elif w_pressed:
+                        if w_pressed:
                             print("W RELEASED")
                             keyboard.release('w')
                             w_pressed = False
