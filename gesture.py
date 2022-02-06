@@ -152,41 +152,41 @@ class MediaPipeHolisticDetection:
                     # comment out hand lift for sitting mode
 
                     # detect heel clicking
-                    current_heel_distance = abs(self.lheel[1] - self.rheel[1])
-                    if current_heel_distance < 0.05 and reset_heels:
-                        # heels have been clicked
-                        reset_heels = False
-                        acceleration_timer.reset()
-                        currently_accelerating = True
-                        time_for_next_acc_or_dec = 0
-                        print("HEELS CLICKED")
-                    if float(acceleration_timer.getCurrentTime()) > 2.5:
-                        currently_accelerating = False
-                        time_for_next_acc_or_dec = 0
-                    if self.average_heel_distance * 0.8 < current_heel_distance < self.average_heel_distance * 1.2 and not reset_heels:
-                        print("HEELS RESET")
-                        reset_heels = True
-
-                    # detect hand lift
-                    # current_hand_height = (self.lhand[2] + self.rhand[2]) / 2
-                    # if current_hand_height + 0.15 < self.average_hand_height and reset_hands:
-                    #     # hands have been lifted
-                    #     reset_hands = False
+                    # current_heel_distance = abs(self.lheel[1] - self.rheel[1])
+                    # if current_heel_distance < 0.05 and reset_heels:
+                    #     # heels have been clicked
+                    #     reset_heels = False
                     #     acceleration_timer.reset()
                     #     currently_accelerating = True
                     #     time_for_next_acc_or_dec = 0
-                    #     print("HANDS RAISED")
+                    #     print("HEELS CLICKED")
                     # if float(acceleration_timer.getCurrentTime()) > 2.5:
                     #     currently_accelerating = False
                     #     time_for_next_acc_or_dec = 0
-                    # if self.average_hand_height * 0.8 < current_hand_height < self.average_hand_height * 1.2 and not reset_hands:
-                    #     print("HANDS RESET")
-                    #     reset_hands = True
+                    # if self.average_heel_distance * 0.8 < current_heel_distance < self.average_heel_distance * 1.2 and not reset_heels:
+                    #     print("HEELS RESET")
+                    #     reset_heels = True
+
+                    # detect hand lift
+                    current_hand_height = (self.lhand[2] + self.rhand[2]) / 2
+                    if current_hand_height + 0.15 < self.average_hand_height and reset_hands:
+                        # hands have been lifted
+                        reset_hands = False
+                        acceleration_timer.reset()
+                        currently_accelerating = True
+                        time_for_next_acc_or_dec = 0
+                        print("HANDS RAISED")
+                    if float(acceleration_timer.getCurrentTime()) > 2.5:
+                        currently_accelerating = False
+                        time_for_next_acc_or_dec = 0
+                    if self.average_hand_height * 0.8 < current_hand_height < self.average_hand_height * 1.2 and not reset_hands:
+                        print("HANDS RESET")
+                        reset_hands = True
 
                     # detect hip heightening
                     current_hip_height = (self.lhip[2] + self.rhip[2]) / 2
                     if float(hip_jump_timer.getCurrentTime()) > 1:
-                        if current_hip_height + 0.1 < self.average_hip_height and reset_hips:
+                        if current_hip_height + 0.08 < self.average_hip_height and reset_hips:
                             # hips have jumped
                             keyboard.press(Key.space)
                             reset_hips = False
@@ -209,7 +209,11 @@ class MediaPipeHolisticDetection:
                             keyboard.release('e')
                             time_for_next_acc_or_dec += 0.5
 
-                cv2.imshow('MediaPipe Pose', image)
+                image = cv2.resize(image, (760, 420))
+                winname = 'MediaPipe Pose'
+                cv2.namedWindow(winname)
+                cv2.moveWindow(winname, 1100, 0)
+                cv2.imshow(winname, image)
                 if cv2.waitKey(5) & 0xFF == 27:
                     break
             cv2.destroyAllWindows()
